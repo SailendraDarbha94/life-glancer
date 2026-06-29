@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__289ef75a-819f-4642-a053-101a7a3e1ea3__notion-search",
+      "Bash(python3 -c ' *)",
+      "mcp__visualize__show_widget",
+      "mcp__289ef75a-819f-4642-a053-101a7a3e1ea3__notion-fetch",
+      "mcp__289ef75a-819f-4642-a053-101a7a3e1ea3__notion-query-data-sources",
+      "Bash(npm -v)",
+      "Bash(SCRATCH=\"/private/tmp/claude-501/-Users-batman-Projects-life-glancer/9552da78-8f7d-4cc6-b173-8b8b60b840e9/scratchpad\" *)"
+    ]
+  }
+}
