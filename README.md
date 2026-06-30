@@ -5,11 +5,22 @@ four live widgets:
 
 | Widget | Source | Endpoint |
 |---|---|---|
-| Inbox | Gmail API (unread, summarized) | `/api/gmail` |
+| Inbox (Primary only) | Gmail API — Primary-tab unread | `/api/gmail` |
+| Inbox digest | Claude — neutral digest of Primary unread | `/api/inbox-summary` |
 | Drive activity | Google Drive API (recent files) | `/api/drive` |
 | Tasks | Notion `Todo List` database | `/api/tasks` |
 | KSDC complaints | Notion `Complaint Management` database | `/api/complaints` |
 | Daily briefing | Claude (Opus 4.8) over all of the above | `/api/briefing` |
+
+There are **two separate summaries**: the cross-cutting **daily briefing** (top banner)
+and a **dedicated inbox digest** (inside the Inbox card) that looks only at the Primary tab.
+
+### Clean up tabs (permanent delete)
+The Inbox card has a **Clean up tabs** button that **permanently deletes** all mail in the
+**Social, Promotions, Updates, and Forums** categories (`/api/inbox/cleanup`, POST). It is
+irreversible and guarded three ways: a server-side allowlist that can never touch Primary, a
+**type-`DELETE`** confirmation, and a **dry-run preview** that reports what *would* be deleted.
+Counts per category come from `/api/inbox/categories`.
 
 Built with Next.js (App Router) + TypeScript + Tailwind. All provider calls run
 **server-side** in route handlers — credentials never reach the browser.
@@ -49,12 +60,17 @@ Create a key at <https://console.anthropic.com/settings/keys> → `ANTHROPIC_API
 3. Put the client ID/secret into `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`.
 4. Get a refresh token (easiest via the [OAuth Playground](https://developers.google.com/oauthplayground/)):
    - Gear icon → *Use your own OAuth credentials* → paste client ID/secret.
-   - Authorize these scopes: `https://www.googleapis.com/auth/gmail.readonly` and `https://www.googleapis.com/auth/drive.metadata.readonly`.
+   - Authorize these scopes: `https://mail.google.com/` and `https://www.googleapis.com/auth/drive.metadata.readonly`.
    - Exchange the authorization code → copy the **refresh token** into `GOOGLE_REFRESH_TOKEN`.
 
-> Because this is a personal app you can keep the Google OAuth consent screen in
-> **Testing** mode (add yourself as a test user) — no Google verification needed
-> for these read-only scopes.
+> ⚠️ **Full Gmail scope is required** because the "Clean up tabs" feature permanently
+> deletes mail (`messages.batchDelete`), which read-only/`gmail.modify` cannot do. The
+> `https://mail.google.com/` scope grants full mailbox access — only grant it to your own app.
+> If you previously authorized read-only, you must re-run this step to mint a new refresh token.
+
+> Because this is a personal app you can keep the Google OAuth consent screen in **Testing**
+> mode (add yourself as a test user). Note: in Testing mode Google expires the refresh token
+> after ~7 days — click **Publish app** on the consent screen to make it permanent.
 
 ## Notes
 - Widgets refresh every 5 minutes; the briefing every 30 minutes. Both have manual refresh buttons.

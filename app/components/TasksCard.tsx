@@ -14,7 +14,7 @@ export function TasksCard() {
   return (
     <Card
       title="Tasks"
-      accent="bg-violet-400"
+      accent="text-violet-400"
       loading={loading}
       isEmpty={!data}
       error={error}
@@ -23,28 +23,26 @@ export function TasksCard() {
     >
       {data && (
         <div className="flex flex-col gap-3">
-          <p className="text-sm text-zinc-500">
-            <span className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+          <p className="text-sm text-muted">
+            <span className="font-mono text-2xl font-semibold text-foreground">
               {data.open.length}
             </span>{" "}
             open · {data.doneCount} done
           </p>
-          <ul className="flex flex-col divide-y divide-black/[.06] dark:divide-white/[.08]">
+          <ul className="flex flex-col divide-y divide-edge">
             {data.open.map((t) => (
               <li key={t.id} className="flex items-center justify-between gap-3 py-2">
                 <a
                   href={t.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="min-w-0 flex-1 truncate text-sm text-zinc-800 hover:underline dark:text-zinc-100"
+                  className="min-w-0 flex-1 truncate text-sm text-foreground transition-colors hover:text-accent"
                 >
                   {t.name}
                 </a>
                 <span
-                  className={`shrink-0 text-xs ${
-                    isOverdue(t.due)
-                      ? "font-medium text-red-500"
-                      : "text-zinc-400"
+                  className={`shrink-0 font-mono text-xs ${
+                    isOverdue(t.due) ? "font-medium text-red-400" : "text-muted"
                   }`}
                 >
                   {shortDate(t.due)}
@@ -52,7 +50,7 @@ export function TasksCard() {
               </li>
             ))}
             {data.open.length === 0 && (
-              <li className="py-2 text-sm text-zinc-400">All clear.</li>
+              <li className="py-2 text-sm text-muted">All clear.</li>
             )}
           </ul>
         </div>

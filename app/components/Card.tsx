@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 
 interface CardProps {
   title: string;
-  accent?: string; // tailwind bg color class for the title dot
+  accent?: string; // tailwind text color class for the glowing title dot
   loading?: boolean;
   isEmpty?: boolean; // true while there is no data to show yet
   error?: string | null;
@@ -13,12 +13,11 @@ interface CardProps {
   children: ReactNode;
 }
 
-// Shared widget shell: title row, refresh affordance, and consistent
-// loading / not-connected / error states so each widget body stays focused
-// on rendering its own data.
+// Shared HUD widget shell: title row, refresh affordance, and consistent
+// loading / not-connected / error states.
 export function Card({
   title,
-  accent = "bg-zinc-400",
+  accent = "text-muted",
   loading,
   isEmpty,
   error,
@@ -27,31 +26,33 @@ export function Card({
   children,
 }: CardProps) {
   return (
-    <section className="flex flex-col rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.1] dark:bg-zinc-900">
-      <header className="mb-3 flex items-center justify-between">
-        <h2 className="flex items-center gap-2 text-sm font-medium tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
-          <span className={`inline-block h-2 w-2 rounded-full ${accent}`} />
+    <section className="panel-glow flex flex-col rounded-xl border border-edge bg-surface/70 p-5 backdrop-blur-sm">
+      <header className="mb-4 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 font-mono text-[11px] font-medium tracking-[0.22em] text-muted uppercase">
+          <span
+            className={`inline-block h-1.5 w-1.5 rounded-full bg-current accent-glow ${accent}`}
+          />
           {title}
         </h2>
         {onRefresh && (
           <button
             onClick={onRefresh}
-            className="text-xs text-zinc-400 transition-colors hover:text-zinc-700 dark:hover:text-zinc-200"
+            className="font-mono text-[10px] tracking-widest text-muted uppercase transition-colors hover:text-accent"
             aria-label={`Refresh ${title}`}
           >
-            {loading ? "…" : "refresh"}
+            {loading ? "···" : "sync"}
           </button>
         )}
       </header>
 
       {needsSetup ? (
-        <p className="text-sm text-amber-600 dark:text-amber-400">
+        <p className="text-sm text-amber-400">
           {error ?? "Not connected yet."} See the README to add credentials.
         </p>
       ) : error ? (
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p className="text-sm text-red-400">{error}</p>
       ) : loading && isEmpty ? (
-        <p className="text-sm text-zinc-400">Loading…</p>
+        <p className="font-mono text-xs text-muted">loading…</p>
       ) : (
         children
       )}

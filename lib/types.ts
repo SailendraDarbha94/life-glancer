@@ -15,6 +15,7 @@ export interface EmailItem {
 
 export interface InboxData {
   unreadCount: number;
+  unreadCountCapped: boolean; // true if there are more than we bothered to count
   messages: EmailItem[];
 }
 
@@ -67,4 +68,28 @@ export interface ComplaintsData {
 export interface BriefingData {
   briefing: string;
   generatedAt: string;
+}
+
+export interface InboxSummaryData {
+  summary: string;
+  generatedAt: string;
+}
+
+// Gmail category cleanup. "primary" is intentionally absent — it can never be a target.
+export type CleanupCategory = "social" | "promotions" | "updates" | "forums";
+
+export interface CategoryCount {
+  count: number;
+  capped: boolean; // true if the real number exceeds the counting cap
+}
+
+export interface CategoryCounts {
+  perCategory: Record<CleanupCategory, CategoryCount>;
+  total: number;
+  totalCapped: boolean;
+}
+
+export interface CleanupResult {
+  deleted: number;
+  dryRun: boolean;
 }

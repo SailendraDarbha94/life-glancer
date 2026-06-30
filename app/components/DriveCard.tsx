@@ -14,7 +14,7 @@ export function DriveCard() {
   return (
     <Card
       title="Drive activity"
-      accent="bg-sky-400"
+      accent="text-sky-400"
       loading={loading}
       isEmpty={!data}
       error={error}
@@ -22,10 +22,10 @@ export function DriveCard() {
       onRefresh={refresh}
     >
       {data && (
-        <ul className="flex flex-col divide-y divide-black/[.06] dark:divide-white/[.08]">
+        <ul className="flex flex-col divide-y divide-edge">
           {data.files.map((f) => (
             <li key={f.id} className="flex items-center gap-3 py-2">
-              <span className="w-12 shrink-0 text-xs text-zinc-400">
+              <span className="w-12 shrink-0 font-mono text-[10px] tracking-wide text-muted uppercase">
                 {driveKind(f.mimeType)}
               </span>
               <div className="min-w-0 flex-1">
@@ -33,11 +33,11 @@ export function DriveCard() {
                   href={f.webViewLink ?? "#"}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block truncate text-sm text-zinc-800 hover:underline dark:text-zinc-100"
+                  className="block truncate text-sm text-foreground transition-colors hover:text-accent"
                 >
                   {f.name}
                 </a>
-                <p className="truncate text-xs text-zinc-400">
+                <p className="truncate text-xs text-muted">
                   {relativeTime(f.modifiedTime)}
                   {f.modifiedBy ? ` · ${f.modifiedBy}` : ""}
                 </p>
@@ -45,7 +45,7 @@ export function DriveCard() {
             </li>
           ))}
           {data.files.length === 0 && (
-            <li className="py-2 text-sm text-zinc-400">No recent files.</li>
+            <li className="py-2 text-sm text-muted">No recent files.</li>
           )}
         </ul>
       )}

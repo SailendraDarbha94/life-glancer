@@ -1,6 +1,25 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { optionalEnv, requireEnv } from "./env";
-import type { InboxData, DriveData, TasksData, ComplaintsData } from "./types";
+import type {
+  EmailItem,
+  InboxData,
+  DriveData,
+  TasksData,
+  ComplaintsData,
+} from "./types";
+
+function client(): { anthropic: Anthropic; model: string } {
+  const anthropic = new Anthropic({ apiKey: requireEnv("ANTHROPIC_API_KEY") });
+  return { anthropic, model: optionalEnv("CLAUDE_MODEL", "claude-opus-4-8") };
+}
+
+function textOf(response: Anthropic.Message): string {
+  return response.content
+    .filter((block): block is Anthropic.TextBlock => block.type === "text")
+    .map((block) => block.text)
+    .join("")
+    .trim();
+}
 
 // The "JARVIS voice" layer: turn the raw widget data into a short, spoken-style
 // morning briefing. Model defaults to Opus 4.8; override with CLAUDE_MODEL.
@@ -20,13 +39,10 @@ Refer to specific numbers and names from the data; do not invent anything not pr
 Address the user directly. Do not use markdown, bullet points, or headings — just plain prose.`;
 
 export async function generateBriefing(input: BriefingInput): Promise<string> {
-  const apiKey = requireEnv("ANTHROPIC_API_KEY");
-  const model = optionalEnv("CLAUDE_MODEL", "claude-opus-4-8");
-  const client = new Anthropic({ apiKey });
-
+  const { anthropic, model } = client();
   const snapshot = JSON.stringify(buildSnapshot(input), null, 2);
 
-  const response = await client.messages.create({
+  const response = await anthropic.messages.create({
     model,
     max_tokens: 1024,
     thinking: { type: "adaptive" },
@@ -41,19 +57,45 @@ export async function generateBriefing(input: BriefingInput): Promise<string> {
     ],
   });
 
-  const text = response.content
-    .filter((block): block is Anthropic.TextBlock => block.type === "text")
-    .map((block) => block.text)
-    .join("")
-    .trim();
+  return textOf(response) || "Nothing notable to report right now.";
+}
 
-  return text || "Nothing notable to report right now.";
+const INBOX_SYSTEM_PROMPT = `You are summarizing the user's unread PRIMARY-tab email. Social, Promotions, Updates, and Forums are already excluded.
+Write a neutral digest of 2 to 4 sentences that groups the unread mail by sender or topic so the user can see at a glance what is waiting.
+Do not prioritize, rank, or advise — just describe what is there.
+Refer to real senders and subjects from the data; invent nothing. Plain prose, no markdown, no bullet points.`;
+
+export async function summarizeInbox(messages: EmailItem[]): Promise<string> {
+  if (messages.length === 0) return "Your Primary tab has no unread mail.";
+
+  const { anthropic, model } = client();
+  const compact = messages.map((m) => ({
+    from: m.from,
+    subject: m.subject,
+    snippet: m.snippet,
+  }));
+
+  const response = await anthropic.messages.create({
+    model,
+    max_tokens: 1024,
+    thinking: { type: "adaptive" },
+    output_config: { effort: "low" },
+    system: INBOX_SYSTEM_PROMPT,
+    messages: [
+      {
+        role: "user",
+        content: `Unread Primary mail:\n\n${JSON.stringify(compact, null, 2)}\n\nGive me the digest.`,
+      },
+    ],
+  });
+
+  return textOf(response) || "Nothing notable in your unread Primary mail.";
 }
 
 // Compact the data to just what the model needs, so the prompt stays small.
 function buildSnapshot(input: BriefingInput) {
   return {
-    unreadEmail: input.inbox && {
+    primaryUnreadEmail: input.inbox && {
       count: input.inbox.unreadCount,
       recent: input.inbox.messages.slice(0, 5).map((m) => ({
         from: m.from,

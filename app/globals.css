@@ -1,26 +1,58 @@
 @import "tailwindcss";
 
+/* Dark HUD theme — committed dark (no light path) for a cohesive look. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0e14;
+  --surface: #0e141d;
+  --surface-2: #121a25;
+  --foreground: #e6edf3;
+  --muted: #8696a7;
+  --accent: #2ee6d6; /* teal-cyan */
+  --edge: rgba(120, 190, 230, 0.14);
+  --grid: rgba(120, 190, 230, 0.045);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-edge: var(--edge);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
+  /* faint HUD grid */
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 44px 44px;
+  background-attachment: fixed;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* subtle depth + accent glow helpers */
+.panel-glow {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 10px 34px -16px rgba(0, 0, 0, 0.8);
+}
+.accent-glow {
+  box-shadow: 0 0 10px -1px currentColor;
+}
+.text-glow {
+  text-shadow: 0 0 14px rgba(46, 230, 214, 0.4);
+}
+
+::selection {
+  background: rgba(46, 230, 214, 0.25);
 }
